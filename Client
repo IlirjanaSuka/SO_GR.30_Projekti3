@@ -32,10 +32,47 @@ int main() {
         exit(EXIT_FAILURE);
 
     }
-
     if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
         perror("Lidhja dështoi");
         exit(EXIT_FAILURE);
 
     }
+ while (1) {
 
+        printf("Shkruani një kërkesë (ose 'exit' për të dalë): ");
+
+        fgets(buffer, BUFFER_SIZE, stdin);
+
+        buffer[strcspn(buffer, "\n")] = '\0';
+
+        if (send(clientSocket, buffer, strlen(buffer), 0) == -1) {
+
+            perror("Dërgimi dështoi");
+
+            exit(EXIT_FAILURE);
+
+        }
+
+        if (strcmp(buffer, "exit") == 0) {
+            break;
+
+        }
+
+        int bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+
+        if (bytesRead == -1) {
+
+            perror("Marrja dështoi");
+            exit(EXIT_FAILURE);
+
+        }
+
+        buffer[bytesRead] = '\0';
+        printf("Përgjigje nga serveri: %s\n", buffer);
+
+    }
+
+    close(clientSocket);
+    return 0;
+
+}
