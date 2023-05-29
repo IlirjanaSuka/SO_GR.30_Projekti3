@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <semaphore.h>
+
+#define MAX_MESSAGES 100
+#define MAX_MESSAGE_LENGTH 256
+#define PORT 50033
+#define MAX_CLIENTS 10
+
+typedef struct {
+    char messages[MAX_MESSAGES][MAX_MESSAGE_LENGTH];
+    int msg;
+    sem_t semaphore;
+} SharedMemory;
+
+void* clientHandler(void* arg) {
+    int clientSocket = *((int*)arg);
+    char buffer[MAX_MESSAGE_LENGTH];
+    int bytesRead;
+
+    
+    int fd = shm_open("/shared_memory", O_RDWR, 0666);
+    if (fd == -1) {
+        perror("Dështoi hapja e shared memory");
+        exit(EXIT_FAILURE);
+    }
+
+    SharedMemory* shm = (SharedMemory*)mmap(NULL, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (shm == MAP_FAILED) {
+        perror("Dështoi mapimi i shared memory");
+        exit(EXIT_FAILURE);
+    }
+
+    while ((bytesRead = recv(clientSocket, buffer, MAX_MESSAGE_LENGTH, 0)) > 0) {
+     
+        sem_wait(&(shm->semaphore));
+
+        
+        strncpy(shm->messages[shm->msg], buffer, MAX_MESSAGE_LENGTH);
+        shm->msg++;
+
+        
+        sem_post(&(shm->semaphore));
+
+        
+        char response[] = "Serveri ka pranuar mesazhin tuaj: ";
+        strcat(response, buffer);
+
+        
+        send(clientSocket, response, strlen(response), 0);
+    }
+
+ 
+    close(clientSocket);
+    pthread_exit(NULL);
+}
