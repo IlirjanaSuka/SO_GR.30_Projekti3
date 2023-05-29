@@ -58,6 +58,46 @@ void* clientHandler(void* arg) {
         
         send(clientSocket, response, strlen(response), 0);
     }
+    int main() {
+    int serverSocket, clientSocket;
+    struct sockaddr_in serverAddress, clientAddress;
+    socklen_t clientAddressLength;
+    pthread_t thread;
+
+    
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1) {
+        perror("Dështoi krijimi i soketës");
+        exit(EXIT_FAILURE);
+    }
+
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(PORT);
+
+    if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+        perror("Dështoi lidhja");
+        exit(EXIT_FAILURE);
+    }
+
+   
+    if (listen(serverSocket, MAX_CLIENTS) == -1) {
+        perror("Dështoi dëgjimi");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Serveri është nisur. Dëgjohet në portin %d\n", PORT);
+
+    int sharedMemoryFd = shm_open("/shared_memory", O_CREAT | O_RDWR, 0666);
+    if (sharedMemoryFd == -1) {
+        perror("Dështoi krijimi i memorisë së ndarë");
+        exit(EXIT_FAILURE);
+    }
+
+    if (ftruncate(sharedMemoryFd, sizeof(SharedMemory)) == -1) {
+        perror("Dështoi shkurtimi i memorisë së ndarë");
+        exit(EXIT_FAILURE);
+    }
 
  
     close(clientSocket);
