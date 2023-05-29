@@ -14,3 +14,28 @@ int main() {
     int clientSocket;
     struct sockaddr_in serverAddress;
     char buffer[BUFFER_SIZE];
+    
+ clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (clientSocket == -1) {
+        perror("Krijimi i soketës dështoi");
+        exit(EXIT_FAILURE);
+
+    }
+
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(PORT);
+
+
+    if (inet_pton(AF_INET, SERVER_IP, &(serverAddress.sin_addr)) <= 0) {
+        perror("Adresë e pavlefshme / Adresa nuk mbështetet");
+        exit(EXIT_FAILURE);
+
+    }
+
+    if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+        perror("Lidhja dështoi");
+        exit(EXIT_FAILURE);
+
+    }
+
