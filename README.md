@@ -1,6 +1,6 @@
 # SO_GR.30_Projekti3
 Tema:Multithreaded Client-Server Application
-Punoi: Ilirjana Suka, Krenare Kryeziu dhe Liburna Berisha.
+Punoi: Ilirjana Suka, Krenare Kryeziu, Leonite Gllareva dhe Liburna Berisha.
 
 Për zhvillimin e projektit e kemi përdorur Ubuntu e cila është një shpërndarje Linux e përbërë kryesisht nga softuer falas dhe me burim të hapur.
 Për krijimin  e projektit i kemi kërkesat e caktuara me anë të se cilave do ta zhvillojmë projektin e dhënë. 
