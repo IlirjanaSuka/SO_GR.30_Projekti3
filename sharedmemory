@@ -1,0 +1,35 @@
+SharedMemory* shm = (SharedMemory*)mmap(NULL, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, sharedMemoryFd, 0);
+    if (shm == MAP_FAILED) {
+        perror("Dështoi mapimi i memorisë së ndarë");
+        exit(EXIT_FAILURE);
+    }
+
+    shm->msg = 0;
+    sem_init(&(shm->semaphore), 1, 1);
+
+    while (1) {
+        
+        clientAddressLength = sizeof(clientAddress);
+        clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        if (clientSocket == -1) {
+            perror("Dështoi pranimi");
+            exit(EXIT_FAILURE);
+        }
+        
+        if (pthread_create(&thread, NULL, clientHandler, &clientSocket) != 0) {
+            perror("Dështoi krijimi i thread-it");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("Klienti i ri u lidh. Soketa e klientit: %d\n", clientSocket);
+    }
+
+    close(serverSocket);
+
+    munmap(shm, sizeof(SharedMemory));
+    close(sharedMemoryFd);
+    shm_unlink("/shared_memory");
+    sem_destroy(&(shm->semaphore));
+
+    return 0;
+}
